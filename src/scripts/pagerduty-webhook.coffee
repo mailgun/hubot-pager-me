@@ -176,30 +176,31 @@ module.exports = (robot) ->
   slackGenerateIncidentString = (incident, hookType) ->
     assigned_user   = getUserForIncident(incident)
     incident_number = incident.incident_number
+    summary = incident.trigger_summary_data.description || incident.trigger_summary_data.subject || incident.incident_key;
 
     if hookType == "incident.trigger"
       """
-      #{incident.trigger_summary_data.description} - assigned to #{assigned_user}
+      #{summary} - assigned to #{assigned_user}
       """
     else if hookType == "incident.acknowledge"
       """
-      #{incident.trigger_summary_data.description} - assigned to #{assigned_user}
+      #{summary} - assigned to #{assigned_user}
       """
     else if hookType == "incident.resolve"
       """
-      #{incident.trigger_summary_data.description} - resolved by #{assigned_user}
+      #{summary} - resolved by #{assigned_user}
       """
     else if hookType == "incident.unacknowledge"
       """
-      #{incident.trigger_summary_data.description} - assigned to #{assigned_user}
+      #{summary} - assigned to #{assigned_user}
       """
     else if hookType == "incident.assign"
       """
-      #{incident.trigger_summary_data.description} - reassigned to #{assigned_user}
+      #{summary} - reassigned to #{assigned_user}
       """
     else if hookType == "incident.escalate"
       """
-      #{incident.trigger_summary_data.description} - escalated and assigned to #{assigned_user}
+      #{summary} - escalated and assigned to #{assigned_user}
       """
 
   slackParseIncidents = (messages) ->
@@ -214,7 +215,7 @@ module.exports = (robot) ->
         title_link: "#{incident.html_url}"
         fallback: generateIncidentFallback(incident, hookType)
         color: generateStatusColor(incident)
-        text: generateIncidentText(incident, hookType)
+        text: slackGenerateIncidentString(incident, hookType)
 
       returnMessage.push(content)
       count = count+1
