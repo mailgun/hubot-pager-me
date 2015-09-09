@@ -10,7 +10,10 @@ module.exports = (robot) ->
   # Webhook listener
   if pagerEndpoint && pagerRoom
     robot.router.post pagerEndpoint, (req, res) ->
-      robot.messageRoom(pagerRoom, parseWebhook(req,res))
+      # robot.messageRoom(pagerRoom, parseWebhook(req,res))
+      robot.emit "slack-attachment",
+        channel: pagerRoom
+        content: slackParseWebhook(req,res)
       res.end()
 
   # Pagerduty Webhook Integration (For a payload example, see http://developer.pagerduty.com/documentation/rest/webhooks)
@@ -90,3 +93,53 @@ module.exports = (robot) ->
       To acknowledge: @#{robot.name} pager me ack #{incident_number}
       To resolve: @#{robot.name} pager me resolve #{incident_number}
       """
+
+  slackParseWebhook = (req, res) ->
+    hook = req.body
+
+    messages = hook.messages
+
+    if /^incident.*$/.test(messages[0].type)
+      slackParseIncidents(messages)
+    else
+      "No incidents in webhook"
+
+  slackGenerateIncidentString = (incident, hookType) ->
+    console.log "hookType is " + hookType
+    assigned_user   = getUserForIncident(incident)
+    incident_number = incident.incident_number
+
+    if hookType == "incident.trigger"
+      """
+      TRIGGERED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} #{incident.status} - assigned to #{assigned_user}  #{incident.html_url}
+      """
+    else if hookType == "incident.acknowledge"
+      """
+      ACKNOWLEDGED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} #{incident.status} - assigned to #{assigned_user} #{incident.html_url}
+      """
+    else if hookType == "incident.resolve"
+      """
+      RESOLVED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - resolved by #{assigned_user} #{incident.html_url}
+      """
+    else if hookType == "incident.unacknowledge"
+      """
+      UNACKNOWLEDGED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - assigned to #{assigned_user} #{incident.html_url}
+      """
+    else if hookType == "incident.assign"
+      """
+      ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - reassigned to #{assigned_user} - #{incident.html_url}
+      """
+    else if hookType == "incident.escalate"
+      """
+      ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - was escalated and assigned to #{assigned_user} #{incident.html_url}
+      """
+
+  slackParseIncidents = (messages) ->
+    returnMessage = []
+    count = 0
+    for message in messages
+      incident = message.data.incident
+      hookType = message.type
+      returnMessage.push(generateIncidentString(incident, hookType))
+      count = count+1
+    returnMessage
