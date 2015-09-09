@@ -121,27 +121,27 @@ module.exports = (robot) ->
 
     if hookType == "incident.trigger"
       """
-      TRIGGERED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} #{incident.status} - assigned to #{assigned_user}  #{incident.html_url}
+      PagerDuty triggered ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} #{incident.status} - assigned to #{assigned_user}  #{incident.html_url}
       """
     else if hookType == "incident.acknowledge"
       """
-      ACKNOWLEDGED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} #{incident.status} - assigned to #{assigned_user} #{incident.html_url}
+      PagerDuty acknowledged ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} #{incident.status} - assigned to #{assigned_user} #{incident.html_url}
       """
     else if hookType == "incident.resolve"
       """
-      RESOLVED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - resolved by #{assigned_user} #{incident.html_url}
+      PagerDuty resolved ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - resolved by #{assigned_user} #{incident.html_url}
       """
     else if hookType == "incident.unacknowledge"
       """
-      UNACKNOWLEDGED ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - assigned to #{assigned_user} #{incident.html_url}
+      PagerDuty unacknowledged ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - assigned to #{assigned_user} #{incident.html_url}
       """
     else if hookType == "incident.assign"
       """
-      ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - reassigned to #{assigned_user} - #{incident.html_url}
+      PagerDuty assigned ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - reassigned to #{assigned_user} - #{incident.html_url}
       """
     else if hookType == "incident.escalate"
       """
-      ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - was escalated and assigned to #{assigned_user} #{incident.html_url}
+      PagerDuty escalated ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - was escalated and assigned to #{assigned_user} #{incident.html_url}
       """
 
   generateIncidentTitle = (incident, hookType) ->
@@ -150,27 +150,27 @@ module.exports = (robot) ->
 
     if hookType == "incident.trigger"
       """
-      PD TRIGGERED (#{incident.service.name})
+      PagerDuty triggered ##{incident_number} (#{incident.service.name})
       """
     else if hookType == "incident.acknowledge"
       """
-      PD ACKNOWLEDGED (#{incident.service.name})
+      PagerDuty acknowledged ##{incident_number} (#{incident.service.name})
       """
     else if hookType == "incident.resolve"
       """
-      PD RESOLVED (#{incident.service.name})
+      PagerDuty resolved  ##{incident_number}(#{incident.service.name})
       """
     else if hookType == "incident.unacknowledge"
       """
-      PD UNACKNOWLEDGED (#{incident.service.name})
+      PagerDuty unacknowledged ##{incident_number} (#{incident.service.name})
       """
     else if hookType == "incident.assign"
       """
-      PD ASSIGNED (#{incident.service.name})
+      PagerDuty assigned ##{incident_number} (#{incident.service.name})
       """
     else if hookType == "incident.escalate"
       """
-      PD ESCALATED (#{incident.service.name})
+      PagerDuty escalated ##{incident_number} (#{incident.service.name})
       """
 
   slackGenerateIncidentString = (incident, hookType) ->
