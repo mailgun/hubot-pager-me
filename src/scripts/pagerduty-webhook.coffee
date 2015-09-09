@@ -104,8 +104,18 @@ module.exports = (robot) ->
     else
       "No incidents in webhook"
 
-  slackGenerateIncidentString = (incident, hookType) ->
-    console.log "hookType is " + hookType
+  generateStatusColor = (incident) ->
+    # triggered, acknowledged, and resolved.
+    if incident.status == "triggered"
+      "#c40022"
+    else if incident.status == "acknowledged"
+      "#00a96d"
+    else if incident.status == "resolved"
+      "#00a96d"
+    else
+      "#cccccc"
+
+  generateIncidentFallback = (incident, hookType) ->
     assigned_user   = getUserForIncident(incident)
     incident_number = incident.incident_number
 
@@ -134,12 +144,78 @@ module.exports = (robot) ->
       ##{incident_number} (#{incident.service.name}): #{incident.trigger_summary_data.description} - was escalated and assigned to #{assigned_user} #{incident.html_url}
       """
 
+  generateIncidentTitle = (incident, hookType) ->
+    assigned_user   = getUserForIncident(incident)
+    incident_number = incident.incident_number
+
+    if hookType == "incident.trigger"
+      """
+      PD TRIGGERED (#{incident.service.name})
+      """
+    else if hookType == "incident.acknowledge"
+      """
+      PD ACKNOWLEDGED (#{incident.service.name})
+      """
+    else if hookType == "incident.resolve"
+      """
+      PD RESOLVED (#{incident.service.name})
+      """
+    else if hookType == "incident.unacknowledge"
+      """
+      PD UNACKNOWLEDGED (#{incident.service.name})
+      """
+    else if hookType == "incident.assign"
+      """
+      PD ASSIGNED (#{incident.service.name})
+      """
+    else if hookType == "incident.escalate"
+      """
+      PD ESCALATED (#{incident.service.name})
+      """
+
+  slackGenerateIncidentString = (incident, hookType) ->
+    assigned_user   = getUserForIncident(incident)
+    incident_number = incident.incident_number
+
+    if hookType == "incident.trigger"
+      """
+      #{incident.trigger_summary_data.description} - assigned to #{assigned_user}
+      """
+    else if hookType == "incident.acknowledge"
+      """
+      #{incident.trigger_summary_data.description} - assigned to #{assigned_user}
+      """
+    else if hookType == "incident.resolve"
+      """
+      #{incident.trigger_summary_data.description} - resolved by #{assigned_user}
+      """
+    else if hookType == "incident.unacknowledge"
+      """
+      #{incident.trigger_summary_data.description} - assigned to #{assigned_user}
+      """
+    else if hookType == "incident.assign"
+      """
+      #{incident.trigger_summary_data.description} - reassigned to #{assigned_user}
+      """
+    else if hookType == "incident.escalate"
+      """
+      #{incident.trigger_summary_data.description} - escalated and assigned to #{assigned_user}
+      """
+
   slackParseIncidents = (messages) ->
     returnMessage = []
     count = 0
     for message in messages
       incident = message.data.incident
       hookType = message.type
-      returnMessage.push(generateIncidentString(incident, hookType))
+
+      content =
+        title: generateIncidentTitle(incident, hookType)
+        title_link: "#{incident.html_url}"
+        fallback: generateIncidentFallback(incident, hookType)
+        color: generateStatusColor(incident)
+        text: generateIncidentText(incident, hookType)
+
+      returnMessage.push(content)
       count = count+1
     returnMessage
