@@ -44,6 +44,7 @@ moment = require('moment-timezone')
 
 pagerDutyUserId        = process.env.HUBOT_PAGERDUTY_USER_ID
 pagerDutyServiceApiKey = process.env.HUBOT_PAGERDUTY_SERVICE_API_KEY
+pagerDutySubdomain     = process.env.HUBOT_PAGERDUTY_SUBDOMAIN
 
 module.exports = (robot) ->
 
@@ -57,7 +58,7 @@ module.exports = (robot) ->
                   else if msg.message.user.email_address
                     "I'm assuming your PagerDuty email is #{msg.message.user.email_address}. Change it with `#{robot.name} pager me as you@yourdomain.com`"
       if user
-        msg.send "I found your PagerDuty user https://#{pagerduty.subdomain}.pagerduty.com#{user.user_url}, #{emailNote}"
+        msg.send "I found your PagerDuty user https://#{pagerDutySubdomain}.pagerduty.com#{user.user_url}, #{emailNote}"
       else
         msg.send "I couldn't find your user :( #{emailNote}"
 
@@ -311,7 +312,7 @@ module.exports = (robot) ->
       buffer = ''
       if schedules.length > 0
         for schedule in schedules
-          buffer += "* #{schedule.name} - https://#{pagerduty.subdomain}.pagerduty.com/schedules##{schedule.id}\n"
+          buffer += "* #{schedule.name} - https://#{pagerDutySubdomain}.pagerduty.com/schedules##{schedule.id}\n"
         msg.send buffer
       else
         msg.send 'No schedules found!'
@@ -530,9 +531,9 @@ module.exports = (robot) ->
       renderSchedule = (s, cb) ->
         withCurrentOncallId msg, s, (oncallUserid, oncallUsername, schedule) ->
           if userId == oncallUserid
-            cb null, "* Yes, you are on call for #{schedule.name} - https://#{pagerduty.subdomain}.pagerduty.com/schedules##{schedule.id}"
+            cb null, "* Yes, you are on call for #{schedule.name} - https://#{pagerDutySubdomain}.pagerduty.com/schedules##{schedule.id}"
           else
-            cb null, "* No, you are NOT on call for #{schedule.name} (but #{oncallUsername} is)- https://#{pagerduty.subdomain}.pagerduty.com/schedules##{schedule.id}"
+            cb null, "* No, you are NOT on call for #{schedule.name} (but #{oncallUsername} is)- https://#{pagerDutySubdomain}.pagerduty.com/schedules##{schedule.id}"
 
       if !userId?
         msg.send "Couldn't figure out the pagerduty user connected to your account."
@@ -597,7 +598,7 @@ module.exports = (robot) ->
       services = json.services
       if services.length > 0
         for service in services
-          buffer += "* #{service.id}: #{service.name} (#{service.status}) - https://#{pagerduty.subdomain}.pagerduty.com/services/#{service.id}\n"
+          buffer += "* #{service.id}: #{service.name} (#{service.status}) - https://#{pagerDutySubdomain}.pagerduty.com/services/#{service.id}\n"
         msg.send buffer
       else
         msg.send 'No services found!'
